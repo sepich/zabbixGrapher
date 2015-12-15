@@ -75,7 +75,11 @@ ob_end_flush();
       <span class="subfilter_disabled" id="graphs-all">Select All</span>
     </td>
     <td class="label"><strong>Item:</strong></td>
-    <td class="inputcol"><select data-placeholder="Select Item(s)..." style="width:350px;" multiple id="items"></select></td>
+    <td class="inputcol">
+      <select data-placeholder="Select Item(s)..." style="width:350px;" multiple id="items"></select>
+      <span class="subfilter_disabled itemgraph" data-type="0">+Normal</span> |
+      <span class="subfilter_disabled itemgraph" data-type="1">+Stacked</span>
+    </td>
   </tr>
 </tbody></table>
 <br>

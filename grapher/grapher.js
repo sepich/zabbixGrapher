@@ -15,6 +15,7 @@ jQuery(function() {
     ssid: getCookie('zbx_sessionid'),
     pagelen: 24
   },
+  itemgraphs=[], //array of items arrays to draw
   $=jQuery;
   console.log('starting');
 
@@ -24,16 +25,16 @@ jQuery(function() {
   var d=new Date();
   d.setFullYear(d.getFullYear() - 1);
   timeControl.addObject("scrollbar", {
-    "period": 10800,
-    "starttime": cdumpts(d),
-    "isNow": 1
-  },
-  {
-    "id":'scrollbar',
-    "loadScroll":1,
-    "mainObject":1,
-    "periodFixed":'1',
-    "sliderMaximumTimePeriod":63072000
+      "period": 10800,
+      "starttime": cdumpts(d),
+      "isNow": 1
+    },
+    {
+      "id":'scrollbar',
+      "loadScroll":1,
+      "mainObject":1,
+      "periodFixed":'1',
+      "sliderMaximumTimePeriod":63072000
   });
   timeControl.processObjects();
   cookie.init();
@@ -127,106 +128,6 @@ jQuery(function() {
     $('#graphs').trigger("chosen:updated");
     $('#graphs').trigger('change');
   });
-  //Draw selected graphs (page)
-  function drawGraphs(page){
-    //cleanup
-    $('#pics').empty();
-    timeControl.objectList={};
-    $.each(flickerfreeScreen.screens, function(){
-      clearTimeout(this.timeoutHandler);
-    });
-    flickerfreeScreen.screens=[];
-
-    graphs=[]
-    if($('#graphs').val()!=null) $.each( $('#graphs').val(), function(){
-      graphs=graphs.concat(this.split(','));
-    });
-    if(graphs.length > options.pagelen){
-      if(page==undefined) page=0;
-      pages=Math.floor(graphs.length/options.pagelen);
-      start = page * options.pagelen;
-      end = Math.min(start + options.pagelen, graphs.length);
-      var s='';
-      for(var i=0; i<=pages; i++){
-        s+=(i==page)? ' | <span class="link bold" data-num="'+i+'">'+(i+1)+'</span>' : ' | <span class="link" data-num="'+i+'">'+(i+1)+'</span>';
-      }
-      if(page>0) s='<span class="link" data-num="'+(page-1)+'">&lt; Previous</span>'+s;
-      else s=s.substr(3);
-      if(page!=pages) s+=' | <span class="link" data-num="'+(page+1)+'">Next &gt;</span>';
-      pager=$('<div class="paging"/>').append(s);
-      pager.appendTo( $('#pics') );
-    }
-    else {
-      start=0;
-      end=graphs.length;
-    }
-    for (var i=start; i<end; i++) {
-      id=graphs[i];
-      $('#pics').append(
-        $('<div class="flickerfreescreen" id="flickerfreescreen_'+id+'" />')
-          .append('<a href="charts.php?graphid='+id+'" id="graph_container_'+id+'" />')
-      );
-      timeControl.addObject(id,
-      {
-       "period": timeControl.timeline._period,
-       "starttime": cdumpts(timeControl.timeline._starttime),
-       "usertime": cdumpts(timeControl.timeline.usertime),
-       "isNow": timeControl.timeline._isNow
-      },
-      {
-        "containerid":"graph_container_"+id,
-        "objDims":{
-          "shiftYtop":35,
-          "yaxis":"0",
-          "graphtype":"0",
-          "graphHeight":"200",
-          "shiftXleft": 50,
-          "shiftXright": 50,
-          "width":"600"
-        },
-        "loadSBox":1,
-        "loadImage":1,
-        "periodFixed":"1",
-        "sliderMaximumTimePeriod": timeControl.timeline.maxperiod,
-        "src": "chart2.php?graphid="+id+"&width=600&height=200&period="+timeControl.timeline._period+""
-      });
-      window.flickerfreeScreen.add({
-        "id": id,
-        "isFlickerfree":true,
-        "pageFile":'screens.php',
-        "resourcetype":'0',
-        "mode":0,
-      //  "timestamp":1450022637,
-        "interval":'60',
-        // "screenitemid":'336',
-        // "screenid":'34',
-        // "groupid":null,
-        // "hostid":0,
-        "timeline":{
-          "period": timeControl.timeline._period,
-          // "stime":'20151213070357',
-          // "stimeNow":'20161212070357',
-          // "starttime":'20131213080357',
-          // "usertime":'20151213080357',
-          "isNow": timeControl.timeline._isNow
-        },
-      //  "profileIdx":'web.screens',
-      //  "profileIdx2":'34',
-      //  "updateProfile":true,
-        "data":null
-      });
-      timeControl.useTimeRefresh(60);
-      timeControl.processObjects();
-      chkbxRange.init()
-    };
-    if(graphs.length > options.pagelen) {
-      pager.clone().appendTo( $('#pics') );
-      $('div.paging span.link').click(function(){
-        drawGraphs( $(this).data('num') );
-      });
-    }
-  }
-
 
   //Items list
   $("#items").chosen({search_contains: true}).change(function(e){
@@ -274,6 +175,20 @@ jQuery(function() {
       $('#items').trigger('change');
     }
   }
+  //Add item graph
+  $('span.itemgraph').click(function(){
+    if($('#items').val()!=null){
+      var items=[]
+      $.each( $('#items').val(), function(){
+        items=items.concat(this.split(','));
+      });
+      itemgraphs.push( {items: items, type: $(this).data('type'), id: Math.random().toString(16).slice(2)} );
+      $('#items option:selected').removeAttr('selected');
+      $('#items').trigger('chosen:updated');
+      $('#items').trigger('change');
+      drawGraphs();
+    }
+  });
 
   //Number hint and clear button
   ['hosts','graphs','items'].each(function(i){
@@ -299,5 +214,159 @@ jQuery(function() {
     }
   }
 
+  //Draw selected graphs (page)
+  function drawGraphs(page){
+    //cleanup
+    $('#pics').empty();
+    timeControl.objectList={};
+    $.each(flickerfreeScreen.screens, function(){
+      if(this.timeoutHandler!=null) clearTimeout(this.timeoutHandler);
+    });
+    flickerfreeScreen.screens=[];
+    ZBX_SBOX={};
+
+    //prepare graphs ids
+    graphs=[]
+    if($('#graphs').val()!=null) $.each( $('#graphs').val(), function(){
+      graphs=graphs.concat(this.split(','));
+    });
+    //prepage pager
+    if(graphs.length > options.pagelen){
+      if(page==undefined) page=0;
+      pages=Math.floor(graphs.length/options.pagelen);
+      start = page * options.pagelen;
+      end = Math.min(start + options.pagelen, graphs.length);
+      var s='';
+      for(var i=0; i<=pages; i++){
+        s+=(i==page)? ' | <span class="link bold" data-num="'+i+'">'+(i+1)+'</span>' : ' | <span class="link" data-num="'+i+'">'+(i+1)+'</span>';
+      }
+      if(page>0) s='<span class="link" data-num="'+(page-1)+'">&lt; Previous</span>'+s;
+      else s=s.substr(3);
+      if(page!=pages) s+=' | <span class="link" data-num="'+(page+1)+'">Next &gt;</span>';
+      pager=$('<div class="paging"/>').append(s);
+      pager.appendTo( $('#pics') );
+    }
+    else {
+      start=0;
+      end=graphs.length;
+    }
+    //add itemgraphs
+    for (var i=0; i<itemgraphs.length; i++) {
+      //https://zabbix-co2-1.serverpod.net/chart.php?itemids[0]=70898&itemids[1]=321352&type=1&batch=1&width=177&height=200&period=86400&stime=20171213104506&
+      id=itemgraphs[i].id;
+      uri=''
+      itemgraphs[i].items.forEach(function(v,k){
+        if(v!=undefined) uri+='itemids['+k+']='+v+'&';
+      })
+      $('#pics').append(
+        $('<div class="flickerfreescreen" id="flickerfreescreen_'+id+'" />')
+          .append('<div class="center" id="itemgraph_'+id+'" />')
+      );
+      timeControl.addObject(id, {
+         "period": timeControl.timeline._period,
+         "starttime": cdumpts(timeControl.timeline._starttime),
+         "usertime": cdumpts(timeControl.timeline.usertime),
+         "isNow": timeControl.timeline._isNow
+        },
+        {
+          "containerid":"itemgraph_"+id,
+          "objDims":{
+            "shiftYtop":35,
+            "yaxis":"0",
+            "graphtype":"0",
+            "graphHeight":"200",
+            "shiftXleft": 65,
+            "shiftXright": 65,
+            "width":"600"
+          },
+          "loadSBox":1,
+          "loadImage":1,
+          "periodFixed":"1",
+          "sliderMaximumTimePeriod": timeControl.timeline.maxperiod,
+          "src": 'chart.php?'+uri+'type='+itemgraphs[i].type+'&batch=1&width=600&height=200&period='+timeControl.timeline._period
+      });
+      window.flickerfreeScreen.add({
+        "id": id,
+        "isFlickerfree":true,
+        "pageFile":'history.php',
+        "resourcetype":'17',
+        "mode":2,
+        "interval":'60',
+        "timeline":{
+          "period": timeControl.timeline._period,
+          "isNow": timeControl.timeline._isNow
+        },
+        "data":{"itemids":[itemgraphs[i].items],"action":'showgraph',"filter":'',"filterTask":null,"markColor":1}
+      });
+    }
+    //add graphs
+    for (var i=start; i<end; i++) {
+      id=graphs[i];
+      $('#pics').append(
+        $('<div class="flickerfreescreen" id="flickerfreescreen_'+id+'" />')
+          .append('<a href="charts.php?graphid='+id+'" id="graph_container_'+id+'" />')
+      );
+      timeControl.addObject(id,
+      {
+       "period": timeControl.timeline._period,
+       "starttime": cdumpts(timeControl.timeline._starttime),
+       "usertime": cdumpts(timeControl.timeline.usertime),
+       "isNow": timeControl.timeline._isNow
+      },
+      {
+        "containerid":"graph_container_"+id,
+        "objDims":{
+          "shiftYtop":35,
+          "yaxis":"0",
+          "graphtype":"0",
+          "graphHeight":"200",
+          "shiftXleft": 65,
+          "shiftXright": 65,
+          "width":"600"
+        },
+        "loadSBox":1,
+        "loadImage":1,
+        "periodFixed":"1",
+        "sliderMaximumTimePeriod": timeControl.timeline.maxperiod,
+        "src": "chart2.php?graphid="+id+"&width=600&height=200&period="+timeControl.timeline._period+""
+      });
+      window.flickerfreeScreen.add({
+        "id": id,
+        "isFlickerfree":true,
+        "pageFile":'screens.php',
+        "resourcetype":'0',
+        "mode":0,
+      //  "timestamp":1450022637,
+        "interval":'60',
+        // "screenitemid":'336',
+        // "screenid":'34',
+        // "groupid":null,
+        // "hostid":0,
+        "timeline":{
+          "period": timeControl.timeline._period,
+          // "stime":'20151213070357',
+          // "stimeNow":'20161212070357',
+          // "starttime":'20131213080357',
+          // "usertime":'20151213080357',
+          "isNow": timeControl.timeline._isNow
+        },
+      //  "profileIdx":'web.screens',
+      //  "profileIdx2":'34',
+      //  "updateProfile":true,
+        "data":null
+      });
+    };
+    //pager at bottom
+    if(graphs.length > options.pagelen) {
+      pager.clone().appendTo( $('#pics') );
+      $('div.paging span.link').click(function(){
+        drawGraphs( $(this).data('num') );
+      });
+    }
+    //live update/select time period
+    timeControl.useTimeRefresh(60);
+    timeControl.processObjects();
+    chkbxRange.init();
+  }
 
 });
