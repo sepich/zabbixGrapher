@@ -9,13 +9,18 @@
 /*allow deselect selected*/
 .chosen-container-multi .chosen-drop .result-selected {
     color: #fff;
-    background-color: #3875d3;
+    background-color: #4885e3;
     cursor: pointer;
     display: list-item;
 }
 .chosen-container-multi .chosen-choices li.search-field {
   width: 100%;
   white-space: inherit;
+}
+.chosen-container .chosen-results li.highlighted,li.selected-result{
+  background-color:#2a62bc;
+  background-image: none;
+  color:#fff
 }
 
 /* number hint and clear button*/
