@@ -234,6 +234,7 @@ jQuery(function() {
     if($('#graphs').val()!=null) $.each( $('#graphs').val(), function(){
       graphs=graphs.concat(this.split(','));
     });
+    var stime = cdumpts((timeControl.timeline._usertime-timeControl.timeline._period)*1000);
     //prepage pager
     if(graphs.length > options.pagelen){
       if(page==undefined) page=0;
@@ -268,7 +269,7 @@ jQuery(function() {
       timeControl.addObject(id, {
          "period": timeControl.timeline._period,
          "starttime": cdumpts(timeControl.timeline._starttime),
-         "usertime": cdumpts(timeControl.timeline.usertime),
+         "usertime": cdumpts(timeControl.timeline._usertime),
          "isNow": timeControl.timeline._isNow
         },
         {
@@ -297,6 +298,7 @@ jQuery(function() {
         "interval":'60',
         "timeline":{
           "period": timeControl.timeline._period,
+          "stime": stime,
           "isNow": timeControl.timeline._isNow
         },
         "data":{"itemids":[itemgraphs[i].items],"action":'showgraph',"filter":'',"filterTask":null,"markColor":1}
@@ -313,7 +315,7 @@ jQuery(function() {
       {
        "period": timeControl.timeline._period,
        "starttime": cdumpts(timeControl.timeline._starttime),
-       "usertime": cdumpts(timeControl.timeline.usertime),
+       "usertime": cdumpts(timeControl.timeline._usertime),
        "isNow": timeControl.timeline._isNow
       },
       {
@@ -347,7 +349,7 @@ jQuery(function() {
         // "hostid":0,
         "timeline":{
           "period": timeControl.timeline._period,
-          // "stime":'20151213070357',
+          "stime": stime,
           // "stimeNow":'20161212070357',
           // "starttime":'20131213080357',
           // "usertime":'20151213080357',
