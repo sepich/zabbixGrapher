@@ -1,19 +1,14 @@
-// helpers ------------------------------------------------------------------
-// fix for JSON.stringify arrays
-if(window.Prototype) {delete Array.prototype.toJSON;}
-// parse cookie names
-function getCookie(key) {
-  var keyValue = document.cookie.match('(^|;) ?' + key + '=([^;]*)(;|$)');
-  return keyValue ? keyValue[2] : null;
-}
+// zabbixGrapher
+// https://github.com/sepich/zabbixGrapher
 
-// main ---------------------------------------------------------------------
 jQuery(function() {
   var options = {
-    url: '/api_jsonrpc.php',
-    timeout: 5000,
-    ssid: getCookie('zbx_sessionid'),
-    pagelen: 24
+    url: '/api_jsonrpc.php',            // zabbix API url
+    timeout: 5000,                      // to API in msec
+    ssid: getCookie('zbx_sessionid'),   // key to API, get from current logged in user
+    pagelen: 24,                        // graphs per page
+    width: 600,                         // of graph
+    height: 200                         // of graph
   },
   itemgraphs=[], //array of items arrays to draw
   $=jQuery;
@@ -252,7 +247,6 @@ jQuery(function() {
     }
     //add itemgraphs
     for (var i=0; i<itemgraphs.length; i++) {
-      //https://zabbix-co2-1.serverpod.net/chart.php?itemids[0]=70898&itemids[1]=321352&type=1&batch=1&width=177&height=200&period=86400&stime=20171213104506&
       id=itemgraphs[i].id;
       uri=''
       itemgraphs[i].items.forEach(function(v,k){
@@ -274,16 +268,16 @@ jQuery(function() {
             "shiftYtop":35,
             "yaxis":"0",
             "graphtype":"0",
-            "graphHeight":"200",
+            "graphHeight": options.height,
             "shiftXleft": 65,
             "shiftXright": 65,
-            "width":"600"
+            "width": options.width
           },
           "loadSBox":1,
           "loadImage":1,
           "periodFixed":"1",
           "sliderMaximumTimePeriod": timeControl.timeline.maxperiod,
-          "src": 'chart.php?'+uri+'type='+itemgraphs[i].type+'&batch=1&width=600&height=200&period='+timeControl.timeline._period
+          "src": 'chart.php?'+uri+'type='+itemgraphs[i].type+'&batch=1&width='+options.width+'&height='+options.height+'&period='+timeControl.timeline._period
       });
       window.flickerfreeScreen.add({
         "id": id,
@@ -319,16 +313,16 @@ jQuery(function() {
           "shiftYtop":35,
           "yaxis":"0",
           "graphtype":"0",
-          "graphHeight":"200",
+          "graphHeight": options.height,
           "shiftXleft": 65,
           "shiftXright": 65,
-          "width":"600"
+          "width": options.width
         },
         "loadSBox":1,
         "loadImage":1,
         "periodFixed":"1",
         "sliderMaximumTimePeriod": timeControl.timeline.maxperiod,
-        "src": "chart2.php?graphid="+id+"&width=600&height=200&period="+timeControl.timeline._period+""
+        "src": "chart2.php?graphid="+id+'&width='+options.width+'&height='+options.height+'&period='+timeControl.timeline._period
       });
       window.flickerfreeScreen.add({
         "id": id,
@@ -370,3 +364,12 @@ jQuery(function() {
   }
 
 });
+
+// helpers ------------------------------------------------------------------
+// fix for JSON.stringify arrays
+if(window.Prototype) {delete Array.prototype.toJSON;}
+// parse cookie names
+function getCookie(key) {
+  var keyValue = document.cookie.match('(^|;) ?' + key + '=([^;]*)(;|$)');
+  return keyValue ? keyValue[2] : null;
+}
