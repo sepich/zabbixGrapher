@@ -148,7 +148,16 @@ jQuery(function() {
           apps={}
           $.each(r.result, function(){
             var app=(this.applications.length)? this.applications[0].name : '-';
-            //todo: expand $1 from .key_
+            //expand $1 in name from .key_
+            if(~this.name.indexOf('$')){
+              var keys=/\[([^\]]+)\]/.exec(this.key_);
+              if(keys[1]!=undefined){
+                keys=keys[1].split(',');
+                for (var i=1; i<=keys.length; i++) {
+                  this.name=this.name.replace('$'+i, keys[i-1].trim());
+                }
+              }
+            }
             if(apps[app]==undefined) apps[app]={}
             if(apps[app][this.name]==undefined) apps[app][this.name]=[this.itemid];
             else apps[app][this.name].push(this.itemid);
