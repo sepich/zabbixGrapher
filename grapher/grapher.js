@@ -287,7 +287,7 @@ jQuery(function() {
           "loadImage":1,
           "periodFixed":"1",
           "sliderMaximumTimePeriod": timeControl.timeline.maxperiod,
-          "src": 'chart.php?'+uri+'type='+itemgraphs[i].type+'&batch=1&width='+options.width+'&height='+options.height+'&period='+timeControl.timeline._period
+          "src": 'chart.php?'+uri+'type='+itemgraphs[i].type+'&batch=1&width='+options.width+'&height='+options.height+'&period='+timeControl.timeline._period+'&stime='+stime
       });
       window.flickerfreeScreen.add({
         "id": id,
@@ -333,7 +333,7 @@ jQuery(function() {
         "loadImage":1,
         "periodFixed":"1",
         "sliderMaximumTimePeriod": timeControl.timeline.maxperiod,
-        "src": "chart2.php?graphid="+id+'&width='+options.width+'&height='+options.height+'&period='+timeControl.timeline._period
+        "src": "chart2.php?graphid="+id+'&width='+options.width+'&height='+options.height+'&period='+timeControl.timeline._period+'&stime='+stime
       });
       window.flickerfreeScreen.add({
         "id": id,
