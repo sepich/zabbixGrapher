@@ -175,6 +175,10 @@ jQuery(function() {
       );
     }
     else {
+      if(itemgraphs.length){
+       itemgraphs=[];
+       drawGraphs();
+      }
       $('#items').trigger("chosen:updated");
       $('#items').trigger('change');
     }
@@ -341,7 +345,7 @@ jQuery(function() {
         "pageFile":'screens.php',
         "resourcetype":'0',
         "mode":0,
-      //  "timestamp":1450022637,
+        // "timestamp":1450022637,
         "interval":'60',
         // "screenitemid":'336',
         // "screenid":'34',
