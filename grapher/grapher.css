@@ -50,6 +50,8 @@ div.flickerfreescreen {
   position: relative;
   margin: 10px;
   vertical-align: top;
+  width: 730px;
+  height: 400px;
 }
 
 /*pager*/
