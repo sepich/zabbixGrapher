@@ -268,7 +268,8 @@ jQuery(function() {
       })
       $('#pics').append(
         $('<div class="flickerfreescreen" id="flickerfreescreen_'+id+'" />')
-          .append('<div class="center" id="itemgraph_'+id+'" />')
+        .append('<div class="center" id="itemgraph_'+id+'" />')
+        .append('<div class="close-graph" data-id="'+id+'" />')
       );
       timeControl.addObject(id, {
          "period": timeControl.timeline._period,
@@ -313,7 +314,8 @@ jQuery(function() {
       id=graphs[i];
       $('#pics').append(
         $('<div class="flickerfreescreen" id="flickerfreescreen_'+id+'" />')
-          .append('<a href="charts.php?graphid='+id+'" id="graph_container_'+id+'" />')
+        .append('<a href="charts.php?graphid='+id+'" id="graph_container_'+id+'" />')
+        .append('<div class="close-graph" data-id="'+id+'" />')
       );
       timeControl.addObject(id,
       {
@@ -372,10 +374,35 @@ jQuery(function() {
         drawGraphs( $(this).data('num') );
       });
     }
+    //attach close button event
+    $('.close-graph').click(function(e){
+      removeGraph(this);
+    });
     //live update/select time period
     timeControl.useTimeRefresh(60);
     timeControl.processObjects();
     chkbxRange.init();
+  }
+
+  // Remove graph (id)
+  function removeGraph(o){
+    var id=$(o).data('id');
+    if($(o).prev('a[id^=graph_container_]').length){
+      //deselect graph
+      $('#graphs option[value='+id+']').removeAttr('selected');
+      $('#graphs').trigger('chosen:updated');
+      $('#graphs').trigger('change');
+    }
+    else{
+      //remove itemgraph
+      for(var i=0; i<itemgraphs.length; i++) {
+        if(itemgraphs[i].id == id) {
+          itemgraphs.splice(i, 1);
+          break;
+        }
+      }
+      $('div#flickerfreescreen_'+id).remove();
+    }
   }
 
 });

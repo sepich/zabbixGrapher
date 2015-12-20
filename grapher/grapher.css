@@ -53,6 +53,21 @@ div.flickerfreescreen {
   width: 730px;
   height: 400px;
 }
+div.flickerfreescreen:hover div.close-graph {display: block;}
+div.close-graph {
+  display: none;
+  font-size: 21px;
+  cursor: pointer;
+  font-weight: 700;
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  color: #ccc;
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  z-index: 10;
+}
+div.close-graph:after {content: '\00d7';}
+div.close-graph:hover {color: #F00;}
 
 /*pager*/
 span.link.bold {
