@@ -389,9 +389,14 @@ jQuery(function() {
     var id=$(o).data('id');
     if($(o).prev('a[id^=graph_container_]').length){
       //deselect graph
-      $('#graphs option[value='+id+']').removeAttr('selected');
-      $('#graphs').trigger('chosen:updated');
-      $('#graphs').trigger('change');
+      if($('#hosts').val().length==1){
+        $('#graphs option[value='+id+']').removeAttr('selected');
+        $('#graphs').trigger('chosen:updated');
+        $('#graphs').trigger('change');
+      }
+      else{
+        $('div#flickerfreescreen_'+id).remove();
+      }
     }
     else{
       //remove itemgraph

@@ -51,7 +51,7 @@ div.flickerfreescreen {
   margin: 10px;
   vertical-align: top;
   width: 730px;
-  height: 400px;
+  min-height: 400px;
 }
 div.flickerfreescreen:hover div.close-graph {display: block;}
 div.close-graph {
