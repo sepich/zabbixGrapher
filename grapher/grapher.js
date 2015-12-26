@@ -11,6 +11,7 @@ jQuery(function() {
     height: 200                         // of graph
   },
   itemgraphs=[], //array of items arrays to draw
+  timeoutID,
   $=jQuery;
   console.log('starting');
 
@@ -58,8 +59,12 @@ jQuery(function() {
   $("#hosts").chosen({search_contains: true}).change(function(e){
     console.log('hosts changed');
     updateHint(this);
-    updateGraphs();
-    updateItems();
+    //delay update while user is clicking (shift-click race)
+    window.clearTimeout(timeoutID);
+    timeoutID = window.setTimeout(function(){
+      updateGraphs();
+      updateItems();
+    }, 1500);
   });
   //fill in hosts list on start
   ZabbixApi('hostgroup.get', {
@@ -88,33 +93,43 @@ jQuery(function() {
   });
   //Update graphs lists
   function updateGraphs(){
-    $('#graphs').empty();
-    if($('#hosts').val() != null){
-      ZabbixApi('graph.get', {
-          hostids: $('#hosts').val(),
-          expandName: 1,
-          output: ['name','graphtype'],
-          sortfield: 'name',
-        },
-        function(r){
-          graphs={}
-          $.each(r.result, function(){
-            if(graphs[this.name]==undefined) graphs[this.name]=[this.graphid];
-            else graphs[this.name].push(this.graphid);
-          });
-          $('#graphs').empty(); //race on shift-click
-          var selected=($('#hosts').val().length==1)? 'selected' : '';
-          $.each(graphs, function(k,v){
-            $('<option value="'+v+'" '+selected+'/>').html(k).appendTo($('#graphs'));
-          });
-          $('#graphs').trigger("chosen:updated");
-          $('#graphs').trigger('change');
-        }
-      );
-    }
-    else {
+    if($('#hosts').val() == null){
+      $('#graphs').empty();
       $('#graphs').trigger("chosen:updated");
       $('#graphs').trigger('change');
+    }
+    else {
+      ZabbixApi('graph.get', {
+        hostids: $('#hosts').val(),
+        expandName: 1,
+        output: ['name','graphtype'],
+        sortfield: 'name',
+      },
+      function(r){
+        //parse graphs to draw as name=[ids,]
+        var graphs={}
+        $.each(r.result, function(){
+          if(graphs[this.name]==undefined) graphs[this.name]=[this.graphid];
+          else graphs[this.name].push(this.graphid);
+        });
+        //update options vals to store already selected
+        $.each($('#graphs option'), function(){
+          var k=$(this).text();
+          if(k in graphs){
+            $(this).val(graphs[k]);
+            delete graphs[k];
+          }
+          else $(this).remove();
+        });
+        //add new options
+        $.each(graphs, function(k,v){
+          $('<option value="'+v+'"/>').html(k).appendTo($('#graphs'));
+        });
+        //select all if only one host selected
+        if($('#hosts').val().length==1 && $('#graphs').val()==null) $('#graphs option').prop('selected', true);
+        $('#graphs').trigger("chosen:updated");
+        $('#graphs').trigger('change');
+      });
     }
   }
   //Select All Graphs
