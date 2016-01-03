@@ -32,6 +32,7 @@ Then add to `Main Menu` with something like this:
                                 'sub_pages' => array('slides.php')
 
 ```
+After Installation you could realise that your zabbix-fronted is not powerful enough to render so many images on one page at once. If so - check out this caching story: http://blog.sepa.spb.ru/2016/01/speed-up-zabbix-graphs-with-nginx.html
 
 ##### Options
 You can tweak some options in the beginning of `grapher.js` file
