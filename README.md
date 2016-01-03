@@ -1,5 +1,5 @@
 # zabbixGrapher
-This is one page js application to quick search/view zabbix graphs, dinamically graph any collected item
+This is one page js application for quick search/view zabbix graphs, dinamically graph any collected item
 * First step is to select host, just start typing HostGroup name or Hostname
 ![Host](https://habrastorage.org/files/f00/e9b/aa9/f00e9baa94654dd7a4b21f3aab706661.png)  
 If you choose one Host - all its graphs would start drawing right away (quick host overview supposed).  
@@ -9,6 +9,7 @@ If you select multiple Hosts - no graphs would be drawn (manual comparison suppo
 Select items in interest and then click to create either `Normal` or `Stacked` graph  
 ![Items](https://habrastorage.org/files/698/3e6/3cd/6983e63cd4f54d879f79148383f756ef.png)  
 * Time Zooming using usual Zabbix timeline and area selection on graphs supported
+* To share selected Graphs just copy and send the URL (it dynamically updated with current state)
 
 P.S.
 It is developed and tested at somewhat old zabbix 2.4.3, no info if it works for latest.
