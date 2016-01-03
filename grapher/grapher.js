@@ -10,7 +10,8 @@ jQuery(function() {
     width: 600,                         // of graph
     height: 200                         // of graph
   },
-  itemgraphs=[], //array of items arrays to draw
+  itemgraphs=[], //array of items obj to draw
+  skipHistory=false, //do not save this draw to history (from navigation)
   timeoutID,
   $=jQuery;
   console.log('starting');
@@ -82,6 +83,7 @@ jQuery(function() {
         og.appendTo( $('#hosts') );
       });
       $('#hosts').trigger("chosen:updated");
+      resoreState(readUrl()); // on page load try to read state from URL
     }
   );
 
@@ -92,7 +94,7 @@ jQuery(function() {
     drawGraphs();
   });
   //Update graphs lists
-  function updateGraphs(){
+  function updateGraphs(toselect){
     if($('#hosts').val() == null){
       $('#graphs').empty();
       $('#graphs').trigger("chosen:updated");
@@ -125,8 +127,9 @@ jQuery(function() {
         $.each(graphs, function(k,v){
           $('<option value="'+v+'"/>').html(k).appendTo($('#graphs'));
         });
-        //select all if only one host selected
-        if($('#hosts').val().length==1 && $('#graphs').val()==null) $('#graphs option').prop('selected', true);
+        //select deferred or all if only one Host selected
+        if(toselect!=null) selectGraphs(toselect);
+        else if($('#hosts').val().length==1 && $('#graphs').val()==null) $('#graphs option').prop('selected', true);
         $('#graphs').trigger("chosen:updated");
         $('#graphs').trigger('change');
       });
@@ -147,56 +150,55 @@ jQuery(function() {
   //Update items lists
   function updateItems(){
     $('#items').empty();
-    if($('#hosts').val() != null){
-      ZabbixApi('item.get', {
-          hostids: $('#hosts').val(),
-          selectApplications: ['name'],
-          filter: {
-            state: 0, //supported
-            status: 0, //enabled
-            value_type: [0,3] //numeric
-          },
-          output: ['name','description','error','key_','units'],
-          sortfield: 'name',
-        },
-        function(r){
-          apps={}
-          $.each(r.result, function(){
-            var app=(this.applications.length)? this.applications[0].name : '-';
-            //expand $1 in name from .key_
-            if(~this.name.indexOf('$')){
-              var keys=/\[([^\]]+)\]/.exec(this.key_);
-              if(keys[1]!=undefined){
-                keys=keys[1].split(',');
-                for (var i=1; i<=keys.length; i++) {
-                  this.name=this.name.replace('$'+i, keys[i-1].trim());
-                }
-              }
-            }
-            if(apps[app]==undefined) apps[app]={}
-            if(apps[app][this.name]==undefined) apps[app][this.name]=[this.itemid];
-            else apps[app][this.name].push(this.itemid);
-          });
-          $.each(apps, function(app,items){
-            var og = $('<optgroup label="'+app+'" />');
-            $.each(items, function(i,v){
-                $('<option value="'+v+'" />').html(i).appendTo(og);
-            });
-            og.appendTo( $('#items') );
-          });
-          $('#items').trigger("chosen:updated");
-          $('#items').trigger('change');
-        }
-      );
-    }
-    else {
+    if($('#hosts').val() == null){
       if(itemgraphs.length){
        itemgraphs=[];
        drawGraphs();
       }
       $('#items').trigger("chosen:updated");
       $('#items').trigger('change');
+      return;
     }
+    ZabbixApi('item.get', {
+        hostids: $('#hosts').val(),
+        selectApplications: ['name'],
+        filter: {
+          state: 0, //supported
+          status: 0, //enabled
+          value_type: [0,3] //numeric
+        },
+        output: ['name','description','error','key_','units'],
+        sortfield: 'name',
+      },
+      function(r){
+        apps={}
+        $.each(r.result, function(){
+          var app=(this.applications.length)? this.applications[0].name : '-';
+          //expand $1 in name from .key_
+          if(~this.name.indexOf('$')){
+            var keys=/\[([^\]]+)\]/.exec(this.key_);
+            if(keys[1]!=undefined){
+              keys=keys[1].split(',');
+              for (var i=1; i<=keys.length; i++) {
+                this.name=this.name.replace('$'+i, keys[i-1].trim());
+              }
+            }
+          }
+          if(apps[app]==undefined) apps[app]={}
+          if(apps[app][this.name]==undefined) apps[app][this.name]=[this.itemid];
+          else apps[app][this.name].push(this.itemid);
+        });
+        $.each(apps, function(app,items){
+          var og = $('<optgroup label="'+app+'" />');
+          $.each(items, function(i,v){
+              $('<option value="'+v+'" />').html(i).appendTo(og);
+          });
+          og.appendTo( $('#items') );
+        });
+        $('#items').trigger("chosen:updated");
+        $('#items').trigger('change');
+      }
+    );
   }
   //Add item graph
   $('span.itemgraph').click(function(){
@@ -397,6 +399,12 @@ jQuery(function() {
     timeControl.useTimeRefresh(60);
     timeControl.processObjects();
     chkbxRange.init();
+    //update url/history
+    if(skipHistory) skipHistory=false;
+    else{
+      var state={hosts: $('#hosts').val(), itemgraphs: itemgraphs, graphs: graphs, page: page};
+      history.pushState(state, '', makeUrl(state));
+    }
   }
 
   // Remove graph (id)
@@ -425,6 +433,74 @@ jQuery(function() {
     }
   }
 
+  // Restore history state
+  window.onpopstate = function(event) {
+    if(event.state) resoreState(event.state);
+  }
+  // page to state
+  function resoreState(state){
+    if(!state['hosts']) return;
+    console.log('restoring state');
+    skipHistory=true;
+    itemgraphs=state.itemgraphs;
+    //hosts already selected, select graphs
+    if( compare($('#hosts').val(), state.hosts) ){
+      selectGraphs(state.graphs);
+      $('#graphs').trigger("chosen:updated");
+      updateHint( $('#graphs') );
+      drawGraphs(state.page);
+    }
+    //hosts changed, load graphs and items
+    else{
+      $('#hosts option:selected').removeAttr('selected');
+      $.each(state.hosts, function(){
+        $('#hosts option[value="'+this+'"]').prop('selected', true);
+      });
+      updateHint( $('#hosts') );
+      $('#hosts').trigger("chosen:updated");
+      updateGraphs(state.graphs);
+      updateItems();
+    }
+  };
+  // select graphs from array
+  function selectGraphs(graphs){
+    $('#graphs option:selected').removeAttr('selected');
+    $.each(graphs, function(){
+      var o=$('#graphs option[value="'+this+'"]');
+      if(!o.length) o=$('#graphs option[value^="'+this+',"]');
+      if(!o.length) o=$('#graphs option[value*=",'+this+',"]');
+      $(o).prop('selected', true);
+    });
+  }
+  // make URL from state
+  function makeUrl(state){
+    var items='', page='';
+    $.each(state.itemgraphs, function(){
+      items+='&items[]='+this.type+','+this.items;
+    })
+    if(state.page) page='&page='+state.page;
+    return location.pathname+'?hosts='+state.hosts+'&graphs='+state.graphs+items+page;
+  }
+  // read state from URL
+  function readUrl(){
+    var match,
+      search = /([^&=]+)=?([^&]*)/g,
+      decode = function(s) { return decodeURIComponent(s); },
+      query  = window.location.search.substring(1),
+      state = {itemgraphs:[]};
+
+    while (match = search.exec(query)){
+      if(match[1]=='items[]'){
+        var item={items: decode(match[2]).split(','), id: Math.random().toString(16).slice(2)};
+        item['type']=item['items'][0];
+        item['items'].splice(0,1);
+        state['itemgraphs'].push(item);
+      }
+      else if(match[1]=='page') state['page']=match[2];
+      else state[decode(match[1])] = decode(match[2]).split(',');
+    }
+    return state;
+  }
 });
 
 // helpers ------------------------------------------------------------------
@@ -434,4 +510,18 @@ if(window.Prototype) {delete Array.prototype.toJSON;}
 function getCookie(key) {
   var keyValue = document.cookie.match('(^|;) ?' + key + '=([^;]*)(;|$)');
   return keyValue ? keyValue[2] : null;
+}
+function compare(arrayA, arrayB) {
+  if(!arrayA || !arrayB) return false;
+  if(arrayA.length != arrayB.length) return false;
+  var a = jQuery.extend(true, [], arrayA);
+  var b = jQuery.extend(true, [], arrayB);
+  a.sort();
+  b.sort();
+  for (var i = 0, l = a.length; i < l; i++) {
+      if (a[i] !== b[i]) {
+          return false;
+      }
+  }
+  return true;
 }
