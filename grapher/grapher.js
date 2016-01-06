@@ -227,6 +227,7 @@ jQuery(function() {
     s.find('option:selected').removeAttr('selected');
     s.trigger('chosen:updated');
     s.trigger('change');
+    $(this).prev('input').val('');
   });
   function updateHint(o){
     if($(o).val() == null){
@@ -238,6 +239,14 @@ jQuery(function() {
       $(o).next().find('.chsn-clean').html('&times;');
     }
   }
+  //Click optgroup to toggle all subitems
+  $(document).on('click', '.group-result', function() {
+    var unselected = $(this).nextUntil('.group-result').not('.result-selected');
+    if(unselected.length) unselected.trigger('mouseup');
+    else $(this).nextUntil('.group-result').each(function() {
+      $('a.search-choice-close[data-option-array-index="' + $(this).data('option-array-index') + '"]').trigger('click');
+    });
+  });
 
   //Draw selected graphs (page)
   function drawGraphs(page){

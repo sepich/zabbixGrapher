@@ -9,6 +9,7 @@ If you select multiple Hosts - no graphs would be drawn (manual comparison suppo
 Select items in interest and then click to create either `Normal` or `Stacked` graph  
 ![Items](https://habrastorage.org/files/698/3e6/3cd/6983e63cd4f54d879f79148383f756ef.png)  
 * Time Zooming using usual Zabbix timeline and area selection on graphs supported
+* You can click group name in list to select/deselect all subitems ("Filesystems" in screenshot above)
 * To share selected Graphs just copy and send the URL (it dynamically updated with current state)
 
 P.S.

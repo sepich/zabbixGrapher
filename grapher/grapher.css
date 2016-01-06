@@ -22,6 +22,8 @@
   background-image: none;
   color:#fff
 }
+/*select optgroup*/
+.chosen-container .chosen-results li.group-result {cursor: pointer;}
 
 /* number hint and clear button*/
 .chsn-hint, .chsn-clean {
