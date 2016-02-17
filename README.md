@@ -16,7 +16,7 @@ P.S.
 It is developed and tested at somewhat old zabbix 2.4.3, no info if it works for latest.
 
 ##### Installation
-Unzip to root of your zabbix-web folder.  
+Unzip to root of your zabbix-web folder (Note: `master` branch is for Zabbix 3.0, use `zabbix2.4` branch for older versions).  
 Then add to `Main Menu` with something like this:
 ```diff
 +++ ./include/menu.inc.php      2015-12-16 00:49:20.939693369 -0800
