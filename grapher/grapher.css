@@ -22,6 +22,8 @@
   background-image: none;
   color:#fff
 }
+.header-title .chosen-container ul {bottom: 0;}
+.header-title .chosen-container ul li {float: inherit;}
 /*select optgroup*/
 .chosen-container .chosen-results li.group-result {cursor: pointer;}
 
@@ -30,6 +32,7 @@
   color: #999;
   display: inline;
   float: right;
+  padding-top: 4px;
 }
 .chsn-clean {
   font-size: 21px;
@@ -44,7 +47,6 @@
 
 /* pics */
 #pics {
-  background-color: #FFF;
   text-align: center;
 }
 div.flickerfreescreen {
@@ -65,7 +67,7 @@ div.close-graph {
   color: #ccc;
   position: absolute;
   right: 10px;
-  top: 10px;
+  top: 0;
   z-index: 10;
 }
 div.close-graph:after {content: '\00d7';}
