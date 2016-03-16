@@ -273,12 +273,12 @@ jQuery(function() {
       end = Math.min(start + options.pagelen, graphs.length);
       var s='';
       for(var i=0; i<=pages; i++){
-        s+=(i==page)? ' | <span class="link bold" data-num="'+i+'">'+(i+1)+'</span>' : ' | <span class="link" data-num="'+i+'">'+(i+1)+'</span>';
+        s+=(i==page)? '<a href="#" class="paging-selected" data-num="'+i+'">'+(i+1)+'</a>' : '<a href="#" data-num="'+i+'">'+(i+1)+'</a>';
       }
-      if(page>0) s='<span class="link" data-num="'+(page-1)+'">&lt; Previous</span>'+s;
-      else s=s.substr(3);
-      if(page!=pages) s+=' | <span class="link" data-num="'+(page+1)+'">Next &gt;</span>';
-      pager=$('<div class="paging"/>').append(s);
+      if(page>0) s='<a href="#" data-num="'+(page-1)+'">&lt; Previous</a>'+s;
+      if(page!=pages) s+='<a href="#" data-num="'+(page+1)+'">Next &gt;</a>';
+      pager=$('<div class="paging-btn-container"/>').append(s);
+      pager=$('<div class="table-paging"/>').append(pager);
       pager.appendTo( $('#pics') );
     }
     else {
@@ -396,7 +396,7 @@ jQuery(function() {
     //pager at bottom
     if(graphs.length > options.pagelen) {
       pager.clone().appendTo( $('#pics') );
-      $('div.paging span.link').click(function(){
+      $('div.paging-btn-container a').click(function(){
         drawGraphs( $(this).data('num') );
       });
     }
