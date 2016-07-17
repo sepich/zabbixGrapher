@@ -442,6 +442,10 @@ jQuery(function() {
     }
   }
 
+  //detect screen width
+  var w=(window.innerWidth-400)/3;
+  if(w>350) w=350;
+  $('.chosen-container').css('width',w+'px');
   // Restore history state
   window.onpopstate = function(event) {
     if(event.state) resoreState(event.state);
