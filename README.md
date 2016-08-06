@@ -12,31 +12,28 @@ Select items in interest and then click to create either `Normal` or `Stacked` g
 * You can click group name in list to select/deselect all subitems ("Filesystems" in screenshot above)
 * To share selected Graphs just copy and send the URL (it dynamically updated with current state)
 
-P.S.
-It is developed and tested at somewhat old zabbix 2.4.3, no info if it works for latest.
-
 ##### Installation
 Unzip to root of your zabbix-web folder (Note: `master` branch is for Zabbix 3.0, use `zabbix2.4` branch for older versions).  
 Then add to `Main Menu` with something like this:
 ```diff
 +++ ./include/menu.inc.php      2015-12-16 00:49:20.939693369 -0800
-@@ -62,6 +62,10 @@
-                                'sub_pages' => array('chart2.php', 'chart3.php', 'chart6.php', 'chart7.php')
-                        ),
-+                       array(
-+                               'url' => 'grapher.php',
-+                               'label' => _('Grapher')
-+                       ),
-                        array(
-                                'url' => 'screens.php',
-                                'label' => _('Screens'),
-                                'sub_pages' => array('slides.php')
+@@ -79,6 +79,10 @@
+            'sub_pages' => array('chart2.php', 'chart3.php', 'chart6.php', 'chart7.php')
+        ],
++       [
++       	'url' => 'grapher.php',
++       	'label' => _('Grapher')
++       ],
+        [
+          'url' => 'screens.php',
+          'label' => _('Screens'),
+          'sub_pages' => array('slides.php')
 
 ```
 After Installation you could realise that your zabbix-fronted is not powerful enough to render so many images on one page at once. If so - check out this caching story: http://blog.sepa.spb.ru/2016/01/speed-up-zabbix-graphs-with-nginx.html
 
 ##### Options
-You can tweak some options in the beginning of `grapher.js` file
+You can tweak some options in the beginning of `grapher.js` file. Please verify URL, if your Zabbix installed to /zabbix it should be `url: '/zabbix/api_jsonrpc.php'`
 ```js
 // main ---------------------------------------------------------------------
 jQuery(function() {
