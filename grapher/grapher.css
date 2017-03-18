@@ -1,3 +1,13 @@
+/*3.2*/
+.header-title {
+    text-align: left;
+}
+.header-title ul {
+    bottom: 6px;
+    position: absolute;
+    right: 0;
+}
+
 /*hide chosen items*/
 .chosen-container-multi .chosen-choices li.search-field input[type="text"] {
   height: inherit;
